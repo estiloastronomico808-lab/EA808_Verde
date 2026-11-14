@@ -8,21 +8,26 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* Sin esto, reglas como display:grid anulan el atributo hidden y el panel nunca se oculta */
+[hidden] { display: none !important; }
 html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text);
   font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 
 .app { display: flex; flex-direction: column; height: 100dvh; max-width: 900px; margin: 0 auto;
-  padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom); gap: 10px; }
+  padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom); gap: 10px; overflow-y: auto; }
 
 .topbar { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; }
 .topbar h1 { font-size: 1.05rem; margin: 0; letter-spacing: .02em; }
+.topbar h1 small { font-size: .7rem; font-weight: 400; color: var(--muted); margin-left: 4px; }
 .topbar-actions { display: flex; gap: 8px; }
 .icon-btn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line);
   background: var(--panel); color: var(--text); font-size: 1.15rem; cursor: pointer; }
 
-.stage { position: relative; flex: 1; min-height: 0; border-radius: 16px; overflow: hidden;
+.stage { position: relative; flex: 1 1 auto; min-height: 42dvh; border-radius: 16px; overflow: hidden;
   background: #000; border: 1px solid var(--line); display: grid; place-items: center; }
-#view { width: 100%; height: 100%; object-fit: contain; display: block; }
+#view { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+/* El video debe seguir "visible" para el navegador (si no, en celulares no entrega imagen), pero sin verse */
+#cam { position: absolute; left: 0; top: 0; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
 
 .countdown { position: absolute; inset: 0; display: grid; place-items: center;
   font-size: 30vmin; font-weight: 700; color: #fff; text-shadow: 0 4px 30px rgba(0,0,0,.6);

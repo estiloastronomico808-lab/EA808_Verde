@@ -8,21 +8,33 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <script>
+    /* Avisos en pantalla: si algo falla (archivo que no carga, error de código), se muestra aquí. */
+    window.addEventListener('error', function (e) {
+      var t = e.target && (e.target.src || e.target.href);
+      var txt = t ? 'No se pudo cargar: ' + String(t).split('/').pop() : 'Error: ' + e.message;
+      var m = document.getElementById('msg'); if (m) { m.textContent = txt; m.hidden = false; }
+    }, true);
+    window.addEventListener('unhandledrejection', function (e) {
+      var r = e.reason, m = document.getElementById('msg');
+      if (m) { m.textContent = 'Error: ' + ((r && (r.message || r.name)) || r); m.hidden = false; }
+    });
+  </script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <main class="app">
     <header class="topbar">
-      <h1>Cabina Chroma</h1>
+      <h1>Cabina Chroma <small>v3</small></h1>
       <div class="topbar-actions">
         <button id="btnFlip" class="icon-btn" title="Cambiar cámara" aria-label="Cambiar cámara">⟲</button>
-        <button id="btnSettings" class="icon-btn" title="Ajustes del verde" aria-label="Ajustes del verde">⚙</button>
+        <button id="btnSettings" class="icon-btn" title="Ajustes del verde" aria-label="Ajustes del verde">&#9881;&#xFE0E;</button>
       </div>
     </header>
 
     <section class="stage" id="stage">
       <canvas id="view" aria-label="Vista previa con fondo reemplazado"></canvas>
-      <video id="cam" playsinline muted autoplay hidden></video>
+      <video id="cam" playsinline muted autoplay></video>
       <div id="countdown" class="countdown" hidden></div>
       <div id="flash" class="flash"></div>
       <div id="msg" class="msg" hidden></div>
@@ -34,6 +46,7 @@
       <label>Quitar reflejo verde <input id="rngSpill" type="range" min="0" max="1" step="0.01" value="0.6"></label>
       <div class="row">
         <button id="btnSample" class="chip">Muestrear fondo</button>
+        <button id="btnUpdate" class="chip">Actualizar app</button>
         <label class="chip">Color <input id="clrKey" type="color" value="#00b140"></label>
         <label class="chip"><input id="chkMirror" type="checkbox" checked> Espejo</label>
       </div>

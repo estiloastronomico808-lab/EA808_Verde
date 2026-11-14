@@ -1,6 +1,6 @@
 /* Service worker: la app funciona sin conexión.
  * Cambia VERSION cada vez que modifiques archivos para forzar la actualización. */
-const VERSION = 'cabina-v1';
+const VERSION = 'cabina-v3';
 const CORE = [
   './', 'index.html', 'styles.css', 'app.js', 'chroma.js',
   'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'fondos/fondos.json'
@@ -39,10 +39,22 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
+  // Imágenes de fondo: caché primero (pesan mucho).
+  if (/\/fondos\/.+\.(jpe?g|png|webp|avif|gif)$/i.test(new URL(req.url).pathname)) {
+    e.respondWith(
+      caches.match(req).then((hit) => hit || fetch(req).then((res) => {
+        if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); }
+        return res;
+      }))
+    );
+    return;
+  }
+
+  // Archivos de la app: red primero (así siempre llega la versión nueva); caché si no hay conexión.
   e.respondWith(
-    caches.match(req).then((hit) => hit || fetch(req).then((res) => {
+    fetch(req, { cache: 'no-cache' }).then((res) => {
       if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); }
       return res;
-    }))
+    }).catch(() => caches.match(req))
   );
 });

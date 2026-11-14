@@ -13,7 +13,8 @@
 
   const state = {
     stream: null,
-    facing: 'user',
+    facing: 'environment',   // cámara trasera por defecto; el botón ⟲ cambia a la frontal
+    deviceId: null,
     bgs: [],                 // { id, name, src, img|null }
     bgId: 'none',
     sampling: false,
@@ -75,6 +76,26 @@
   function currentBg() { return state.bgs.find((b) => b.id === state.bgId) || null; }
 
   /* ---------- cámara ---------- */
+  // Prueba varias formas de pedir la cámara; muchos celulares ignoran facingMode si no es "exact".
+  async function openStream() {
+    const base = { width: { ideal: 1920 }, height: { ideal: 1080 } };
+    const tries = [];
+    if (state.deviceId) tries.push(Object.assign({}, base, { deviceId: { exact: state.deviceId } }));
+    tries.push(Object.assign({}, base, { facingMode: { exact: state.facing } }));
+    tries.push(Object.assign({}, base, { facingMode: state.facing }));
+    tries.push(base);
+    let last;
+    for (const v of tries) {
+      try {
+        return await navigator.mediaDevices.getUserMedia({ audio: false, video: v });
+      } catch (err) {
+        last = err;
+        if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) throw err;
+      }
+    }
+    throw last;
+  }
+
   async function startCamera() {
     stopCamera();
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -82,13 +103,19 @@
       return;
     }
     try {
-      state.stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: { facingMode: state.facing, width: { ideal: 1920 }, height: { ideal: 1080 } }
-      });
+      state.stream = await openStream();
+      const st = state.stream.getVideoTracks()[0].getSettings();
+      if (st.deviceId) state.deviceId = st.deviceId;
+      if (st.facingMode === 'user' || st.facingMode === 'environment') state.facing = st.facingMode;
       video.srcObject = state.stream;
       await video.play();
-      hideMsg();
+      showMsg('Cámara ' + (state.facing === 'environment' ? 'trasera' : 'frontal') + ' · ' +
+        video.videoWidth + '×' + video.videoHeight, 2500);
+      setTimeout(() => {
+        if (state.stream && !video.videoWidth) {
+          showMsg('La cámara no entrega imagen. Cierra otras apps que la estén usando y recarga.');
+        }
+      }, 4000);
     } catch (err) {
       const denied = err && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
       showMsg(denied
@@ -248,12 +275,33 @@
   /* ---------- eventos ---------- */
   function bind() {
     $('btnShot').addEventListener('click', takePhoto);
-    $('btnFlip').addEventListener('click', () => {
-      state.facing = state.facing === 'user' ? 'environment' : 'user';
-      startCamera();
+    $('btnFlip').addEventListener('click', async () => {
+      const before = state.facing;
+      state.deviceId = null;
+      state.facing = before === 'user' ? 'environment' : 'user';
+      await startCamera();
+      // Si el teléfono entregó la misma cámara, probamos la siguiente de la lista.
+      if (state.facing === before) {
+        const cams = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'videoinput');
+        if (cams.length > 1) {
+          const i = cams.findIndex((c) => c.deviceId === state.deviceId);
+          state.deviceId = cams[(i + 1) % cams.length].deviceId;
+          await startCamera();
+        }
+      }
     });
     $('btnSettings').addEventListener('click', () => {
       const p = $('panelSettings'); p.hidden = !p.hidden;
+    });
+    // Borra la copia guardada en el dispositivo y recarga con la versión más reciente.
+    $('btnUpdate').addEventListener('click', async () => {
+      try {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      } catch (e) {}
+      location.reload();
     });
 
     const link = (id, key, parse) => $(id).addEventListener('input', (e) => {
@@ -333,6 +381,12 @@
     await startCamera();
     requestAnimationFrame(loop);
     if ('serviceWorker' in navigator) {
+      const hadController = !!navigator.serviceWorker.controller;
+      let reloaded = false;
+      // Si se instala una versión nueva de la app, recarga sola (salvo que estés tomando una foto).
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (hadController && !reloaded && !state.busy) { reloaded = true; location.reload(); }
+      });
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
   }
