@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cabina Chroma</title>
+  <meta name="theme-color" content="#0b0f14">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <h1>Cabina Chroma</h1>
+      <div class="topbar-actions">
+        <button id="btnFlip" class="icon-btn" title="Cambiar cámara" aria-label="Cambiar cámara">⟲</button>
+        <button id="btnSettings" class="icon-btn" title="Ajustes del verde" aria-label="Ajustes del verde">⚙</button>
+      </div>
+    </header>
+
+    <section class="stage" id="stage">
+      <canvas id="view" aria-label="Vista previa con fondo reemplazado"></canvas>
+      <video id="cam" playsinline muted autoplay hidden></video>
+      <div id="countdown" class="countdown" hidden></div>
+      <div id="flash" class="flash"></div>
+      <div id="msg" class="msg" hidden></div>
+    </section>
+
+    <section class="panel" id="panelSettings" hidden>
+      <label>Similitud <input id="rngSim" type="range" min="0" max="1" step="0.01" value="0.35"></label>
+      <label>Suavizado de borde <input id="rngSmooth" type="range" min="0" max="0.5" step="0.01" value="0.12"></label>
+      <label>Quitar reflejo verde <input id="rngSpill" type="range" min="0" max="1" step="0.01" value="0.6"></label>
+      <div class="row">
+        <button id="btnSample" class="chip">Muestrear fondo</button>
+        <label class="chip">Color <input id="clrKey" type="color" value="#00b140"></label>
+        <label class="chip"><input id="chkMirror" type="checkbox" checked> Espejo</label>
+      </div>
+    </section>
+
+    <section class="backgrounds" aria-label="Fondos">
+      <div id="bgList" class="bg-list" role="listbox"></div>
+    </section>
+
+    <footer class="controls">
+      <label class="chip upload">+ Fondo<input id="fileBg" type="file" accept="image/*" multiple hidden></label>
+      <button id="btnShot" class="shutter" aria-label="Tomar foto"></button>
+      <label class="chip timer">Temporizador
+        <select id="selTimer">
+          <option value="0">Sin</option>
+          <option value="3" selected>3 s</option>
+          <option value="5">5 s</option>
+        </select>
+      </label>
+    </footer>
+  </main>
+
+  <dialog id="dlgResult">
+    <img id="imgResult" alt="Foto resultante">
+    <div class="dlg-actions">
+      <button id="btnSave" class="chip primary">Descargar</button>
+      <button id="btnShare" class="chip" hidden>Compartir</button>
+      <button id="btnRetake" class="chip">Repetir</button>
+    </div>
+  </dialog>
+
+  <button id="btnInstall" class="install" hidden>Instalar app</button>
+
+  <script src="chroma.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

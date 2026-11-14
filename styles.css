@@ -1,0 +1,76 @@
+:root {
+  --bg: #0b0f14;
+  --panel: #141b24;
+  --line: #243040;
+  --text: #e8eef5;
+  --muted: #8ea0b4;
+  --accent: #4cc2ff;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+.app { display: flex; flex-direction: column; height: 100dvh; max-width: 900px; margin: 0 auto;
+  padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom); gap: 10px; }
+
+.topbar { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; }
+.topbar h1 { font-size: 1.05rem; margin: 0; letter-spacing: .02em; }
+.topbar-actions { display: flex; gap: 8px; }
+.icon-btn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--text); font-size: 1.15rem; cursor: pointer; }
+
+.stage { position: relative; flex: 1; min-height: 0; border-radius: 16px; overflow: hidden;
+  background: #000; border: 1px solid var(--line); display: grid; place-items: center; }
+#view { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.countdown { position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 30vmin; font-weight: 700; color: #fff; text-shadow: 0 4px 30px rgba(0,0,0,.6);
+  pointer-events: none; }
+.flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.flash.go { animation: flash .35s ease-out; }
+@keyframes flash { 0% { opacity: .9 } 100% { opacity: 0 } }
+.msg { position: absolute; inset: auto 12px 12px 12px; padding: 10px 12px; border-radius: 10px;
+  background: rgba(20,27,36,.92); border: 1px solid var(--line); font-size: .92rem; }
+
+.panel { display: grid; gap: 8px; padding: 12px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 14px; }
+.panel label { display: grid; gap: 4px; font-size: .85rem; color: var(--muted); }
+.panel input[type=range] { width: 100%; accent-color: var(--accent); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.backgrounds { min-height: 0; }
+.bg-list { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; scroll-snap-type: x proximity; }
+.bg-item { flex: 0 0 auto; width: 84px; height: 56px; border-radius: 10px; border: 2px solid transparent;
+  background-size: cover; background-position: center; cursor: pointer; scroll-snap-align: start;
+  outline: 1px solid var(--line); }
+.bg-item[aria-selected=true] { border-color: var(--accent); }
+.bg-item.none { display: grid; place-items: center; font-size: .75rem; color: var(--muted); background: #111; }
+
+.controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 0 10px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 9px 13px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--text); font-size: .85rem; cursor: pointer; }
+.chip.primary { background: var(--accent); color: #04121c; border-color: transparent; font-weight: 600; }
+.chip select, .chip input[type=color] { background: transparent; color: inherit; border: 0; font: inherit; }
+.chip input[type=color] { width: 28px; height: 22px; padding: 0; }
+.timer { flex-direction: column; align-items: flex-start; gap: 0; border-radius: 14px; padding: 6px 12px; font-size: .72rem; color: var(--muted); }
+.timer select { font-size: .95rem; color: var(--text); }
+
+.shutter { width: 74px; height: 74px; border-radius: 50%; border: 4px solid #fff; background: #fff;
+  box-shadow: 0 0 0 4px rgba(255,255,255,.18) inset; cursor: pointer; }
+.shutter:active { transform: scale(.94); }
+.shutter:disabled { opacity: .5; }
+
+dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--panel); color: var(--text);
+  padding: 12px; max-width: min(92vw, 720px); }
+dialog::backdrop { background: rgba(0,0,0,.7); }
+dialog img { width: 100%; max-height: 70dvh; object-fit: contain; border-radius: 10px; display: block;
+  background: #000; }
+.dlg-actions { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+
+.install { position: fixed; right: 12px; bottom: calc(110px + env(safe-area-inset-bottom)); padding: 10px 14px;
+  border-radius: 999px; border: 0; background: var(--accent); color: #04121c; font-weight: 600; cursor: pointer; }
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .backgrounds { display: none; }
+}
